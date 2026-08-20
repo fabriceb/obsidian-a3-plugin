@@ -1,0 +1,158 @@
+/* The pane behind the A3 page */
+.workspace-leaf-content[data-type="a3-view"] .view-content {
+    overflow: auto;
+    padding: var(--size-4-2);
+    background-color: var(--background-secondary);
+}
+
+/* Font-size +/- view actions at a bound: still clickable (no-op) but shown dimmed */
+.view-action.is-disabled {
+    opacity: 0.35;
+}
+
+/* The A3 page itself: real A3 landscape paper, kept white in dark mode too
+   since it represents a printed document */
+.a3-page {
+    width: 42cm;
+    height: 29.7cm;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: #ffffff;
+    color: #333333;
+    border: 0px solid #dddddd;
+    column-count: 2;
+    column-gap: 2rem;
+    column-fill: auto;
+    overflow: hidden;
+    font-size: 10pt;
+    line-height: 1.4;
+    /* The page represents printed paper: force light values for the
+       Obsidian variables its content inherits, even in dark mode */
+    color-scheme: light;
+    --background-primary: #ffffff;
+    --background-secondary: #f5f5f5;
+    --background-modifier-border: #dddddd;
+    --text-normal: #333333;
+    --text-muted: #555555;
+    --text-faint: #777777;
+    --code-background: #f5f5f5;
+    --code-normal: #333333;
+    --hr-color: rgb(204, 204, 204);
+    --table-border-color: #dddddd;
+    --table-header-background: #f5f5f5;
+    --link-color: #2f5c8f;
+    --link-external-color: #2f5c8f;
+    --blockquote-border-color: #cccccc;
+    --checkbox-color: #2f5c8f;
+}
+
+/* Normal text at 10pt, per the A3 spec (1em = the 10pt base set on .a3-page) */
+.a3-page p,
+.a3-page li,
+.a3-page th,
+.a3-page td {
+    font-size: 1em;
+    color: #333333;
+}
+
+.a3-page p {
+    margin: 0 0 1rem 0;
+}
+
+.a3-page ul,
+.a3-page ol {
+    margin: 0 0 1rem 1.5rem;
+    padding: 0;
+}
+
+/* Headers at 12pt (1.2em of the 10pt base on .a3-page); h1/h2 carry the A3 blue banner */
+.a3-page h1,
+.a3-page h2,
+.a3-page h3 {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333333;
+    break-after: avoid;
+}
+
+.a3-page h1 {
+    margin: 0 0 1rem 0;
+    background-color: rgb(195, 213, 236);
+    padding: 0.3rem 0.5rem;
+}
+
+.a3-page h2 {
+    margin: 1.5rem 0 0.75rem 0;
+    background-color: rgb(195, 213, 236);
+    padding: 0.3rem 0.5rem;
+}
+
+.a3-page h3 {
+    margin: 1.2rem 0 0.5rem 0;
+}
+
+.a3-page hr {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid rgb(204, 204, 204);
+}
+
+.a3-page table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.5rem;
+    break-inside: avoid;
+}
+
+.a3-page th,
+.a3-page td {
+    border: 1px solid #dddddd;
+    padding: 0.2rem 0.3rem;
+    text-align: left;
+}
+
+.a3-page th {
+    background-color: #f5f5f5;
+}
+
+.a3-page a {
+    color: #2f5c8f;
+}
+
+/* Mermaid diagrams (Obsidian wraps them in .block-language-mermaid) */
+.a3-page .block-language-mermaid,
+.a3-page .mermaid {
+    text-align: center;
+    break-inside: avoid;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0 0 0 0;
+}
+
+/* Note: the light mermaid colors themselves are handled in main.ts by
+   injecting "theme: neutral" into each diagram before rendering; recent
+   mermaid bakes theme colors into inline styles, out of reach of CSS. */
+.a3-page .block-language-mermaid svg,
+.a3-page .mermaid svg {
+    max-width: 100%;
+    background-color: transparent;
+}
+
+/* Print rules for the standalone HTML export opened in the browser via the
+   printer action (this stylesheet is inlined into that export) */
+@media print {
+    .a3-page {
+        zoom: 1 !important;
+        width: 42cm;
+        height: 29.7cm;
+        margin: 0;
+        padding: 0cm;
+        border: none;
+        box-shadow: none;
+    }
+
+    @page {
+        size: A3 landscape;
+        margin: 0;
+    }
+}

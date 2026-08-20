@@ -1,0 +1,9 @@
+{
+    "id": "a3-problem-solving",
+    "name": "A3 Problem-Solving",
+    "version": "0.1.0",
+    "minAppVersion": "1.5.0",
+    "description": "Render markdown notes as a Toyota-style A3 problem-solving report: a 42cm x 29.7cm two-column page that fits on screen, with mermaid diagrams.",
+    "author": "Fabrice Bernhard",
+    "isDesktopOnly": false
+}
