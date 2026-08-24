@@ -212,7 +212,7 @@ class A3View extends TextFileView {
     // The chosen font size is part of the view state, so it survives
     // reopening the note and app restarts (stored in the workspace layout).
     getState(): Record<string, unknown> {
-        const state = super.getState() as Record<string, unknown>;
+        const state = super.getState();
         state.fontSizePt = this.fontSizePt;
         return state;
     }
@@ -305,9 +305,13 @@ ${clone.outerHTML}
 </body>
 </html>
 `;
-        const os = req("os") as typeof import("node:os");
-        const fspath = req("path") as typeof import("node:path");
-        const fs = req("fs") as typeof import("node:fs");
+        const os = req("os") as { tmpdir: () => string };
+        const fspath = req("path") as {
+            join: (...parts: string[]) => string;
+        };
+        const fs = req("fs") as {
+            writeFileSync: (path: string, data: string, enc: "utf8") => void;
+        };
         const electron = req("electron") as {
             shell: { openPath: (path: string) => Promise<string> };
         };
@@ -353,7 +357,7 @@ ${clone.outerHTML}
         // which is scaled by an ancestor's CSS zoom: node boxes would come
         // out too small for their text. Render at zoom 1, fit afterwards.
         // (The fresh page div has no inline zoom yet, so it renders at 1.)
-        page.setCssProps({ "font-size": `${this.fontSizePt}pt` });
+        page.setCssProps({ "--a3-font-size": `${this.fontSizePt}pt` });
         await MarkdownRenderer.render(
             this.app,
             hideMermaidFromObsidian(this.data),

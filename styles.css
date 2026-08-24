@@ -30,7 +30,8 @@
     column-gap: 2rem;
     column-fill: auto;
     overflow: hidden;
-    font-size: 9pt;
+    /* Set per view via the --a3-font-size custom property (+/- actions) */
+    font-size: var(--a3-font-size, 9pt);
     line-height: 1.4;
     /* The page represents printed paper: force light values for the
        Obsidian variables its content inherits, even in dark mode */
