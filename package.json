@@ -9,12 +9,18 @@
     },
     "devDependencies": {
         "@types/node": "^20.11.0",
-        "esbuild": "^0.21.5",
+        "esbuild": "^0.28.2",
+        "eslint": "^9.39.5",
+        "eslint-plugin-obsidianmd": "^0.4.2",
         "obsidian": "^1.5.7",
         "tslib": "^2.6.2",
         "typescript": "^5.4.5"
     },
     "dependencies": {
         "mermaid": "^11.17.0"
+    },
+    "allowScripts": {
+        "eslint-plugin-obsidianmd@0.4.2": true,
+        "esbuild@0.28.2": true
     }
 }
