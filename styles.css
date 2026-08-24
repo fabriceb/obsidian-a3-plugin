@@ -16,6 +16,7 @@
 .a3-page {
     width: 42cm;
     height: 29.7cm;
+
     /* The page's inner margin: inside the 42cm x 29.7cm (border-box), and
        in em so it scales with the chosen font size. Nothing outside (the
        horizontal auto is only on-screen centering; it resolves to 0 when
@@ -23,33 +24,36 @@
     box-sizing: border-box;
     margin: 0 auto;
     padding: 1em;
-    background-color: #ffffff;
-    color: #333333;
-    border: 0px solid #dddddd;
+    background-color: #fff;
+    color: #333;
+    border: 0 solid #ddd;
     column-count: 2;
     column-gap: 2rem;
     column-fill: auto;
     overflow: hidden;
+
     /* Set per view via the --a3-font-size custom property (+/- actions) */
     font-size: var(--a3-font-size, 9pt);
     line-height: 1.4;
+
     /* The page represents printed paper: force light values for the
        Obsidian variables its content inherits, even in dark mode */
     color-scheme: light;
-    --background-primary: #ffffff;
+
+    --background-primary: #fff;
     --background-secondary: #f5f5f5;
-    --background-modifier-border: #dddddd;
-    --text-normal: #333333;
-    --text-muted: #555555;
-    --text-faint: #777777;
+    --background-modifier-border: #ddd;
+    --text-normal: #333;
+    --text-muted: #555;
+    --text-faint: #777;
     --code-background: #f5f5f5;
-    --code-normal: #333333;
-    --hr-color: rgb(204, 204, 204);
-    --table-border-color: #dddddd;
+    --code-normal: #333;
+    --hr-color: rgb(204 204 204);
+    --table-border-color: #ddd;
     --table-header-background: #f5f5f5;
     --link-color: #2f5c8f;
     --link-external-color: #2f5c8f;
-    --blockquote-border-color: #cccccc;
+    --blockquote-border-color: #ccc;
     --checkbox-color: #2f5c8f;
 }
 
@@ -59,7 +63,7 @@
 .a3-page th,
 .a3-page td {
     font-size: 1em;
-    color: #333333;
+    color: #333;
 }
 
 .a3-page p {
@@ -78,19 +82,19 @@
 .a3-page h3 {
     font-size: 1.2em;
     font-weight: bold;
-    color: #333333;
+    color: #333;
     break-after: avoid;
 }
 
 .a3-page h1 {
     margin: 0 0 1rem 0;
-    background-color: rgb(195, 213, 236);
+    background-color: rgb(195 213 236);
     padding: 0.3rem 0.5rem;
 }
 
 .a3-page h2 {
     margin: 1.5rem 0 0.75rem 0;
-    background-color: rgb(195, 213, 236);
+    background-color: rgb(195 213 236);
     padding: 0.3rem 0.5rem;
 }
 
@@ -101,7 +105,7 @@
 .a3-page hr {
     margin: 1.5rem 0;
     border: none;
-    border-top: 1px solid rgb(204, 204, 204);
+    border-top: 1px solid rgb(204 204 204);
 }
 
 .a3-page table {
@@ -113,7 +117,7 @@
 
 .a3-page th,
 .a3-page td {
-    border: 1px solid #dddddd;
+    border: 1px solid #ddd;
     padding: 0.2rem 0.3rem;
     text-align: left;
 }
@@ -151,13 +155,14 @@
         width: 42cm;
         height: 29.7cm;
         margin: 0;
+
         /* padding is NOT zeroed: the 1em inner margin is part of the page */
         border: none;
         box-shadow: none;
     }
 
     @page {
-        size: A3 landscape;
+        size: a3 landscape;
         margin: 0;
     }
 }
