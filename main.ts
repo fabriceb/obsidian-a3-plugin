@@ -317,8 +317,16 @@ ${clone.outerHTML}
         };
         const safeName = title.replace(/[^\wÀ-ɏ -]+/g, "_");
         const outPath = fspath.join(os.tmpdir(), `${safeName} (A3 print).html`);
-        fs.writeFileSync(outPath, html, "utf8");
-        await electron.shell.openPath(outPath);
+        try {
+            fs.writeFileSync(outPath, html, "utf8");
+            // openPath resolves with an error message (not a rejection)
+            // when the file could not be opened
+            const openError = await electron.shell.openPath(outPath);
+            if (openError) throw new Error(openError);
+        } catch (e) {
+            console.error("A3: could not open the print export", e);
+            new Notice("Could not open the print export in the browser.");
+        }
     }
 
     getViewData(): string {
