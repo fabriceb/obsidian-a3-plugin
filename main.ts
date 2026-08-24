@@ -4,6 +4,7 @@ import {
     MarkdownView,
     Menu,
     Notice,
+    Platform,
     Plugin,
     TextFileView,
     TFile,
@@ -222,11 +223,11 @@ class A3View extends TextFileView {
     private async printA3(): Promise<void> {
         const page = this.page;
         if (!page) return;
-        const req = (window as unknown as { require?: NodeRequire }).require;
-        if (!req) {
+        if (!Platform.isDesktopApp) {
             new Notice("Printing is only available on desktop.");
             return;
         }
+        const req = (window as unknown as { require: NodeRequire }).require;
         let pluginCss = "";
         const dir = this.plugin.manifest.dir;
         if (dir) {
@@ -239,7 +240,7 @@ class A3View extends TextFileView {
             }
         }
         const clone = page.cloneNode(true) as HTMLElement;
-        clone.style.zoom = "1"; // print at true size, not the fit zoom
+        clone.setCssProps({ zoom: "1" }); // print at true size, not the fit zoom
         const title = this.file?.basename ?? "A3";
         const html = `<!DOCTYPE html>
 <html>
@@ -301,8 +302,10 @@ ${clone.outerHTML}
         // Mermaid measures its HTML labels with getBoundingClientRect(),
         // which is scaled by an ancestor's CSS zoom: node boxes would come
         // out too small for their text. Render at zoom 1, fit afterwards.
-        page.style.zoom = "1";
-        page.style.fontSize = `${this.fontSizePt}pt`;
+        page.setCssProps({
+            zoom: "1",
+            "font-size": `${this.fontSizePt}pt`,
+        });
         await MarkdownRenderer.render(
             this.app,
             hideMermaidFromObsidian(this.data),
@@ -353,8 +356,21 @@ ${clone.outerHTML}
                     container
                 );
                 if (seq !== this.renderSeq) return;
-                container.innerHTML = svg;
-                bindFunctions?.(container);
+                // Parse the SVG string into a detached document and adopt
+                // only the <svg> element, rather than assigning innerHTML
+                // on the live DOM. The lenient text/html parser is used
+                // because htmlLabels inside foreignObject need not be
+                // well-formed XML.
+                const parsed = new DOMParser().parseFromString(
+                    svg,
+                    "text/html"
+                );
+                const svgEl = parsed.body.querySelector("svg");
+                container.empty();
+                if (svgEl) {
+                    container.appendChild(document.importNode(svgEl, true));
+                    bindFunctions?.(container);
+                }
             } catch (e) {
                 console.error("A3: mermaid render failed", e);
                 container.setText(String(e));
@@ -384,7 +400,7 @@ ${clone.outerHTML}
             availableHeight / page.offsetHeight,
             1
         );
-        page.style.zoom = String(zoom);
+        page.setCssProps({ zoom: String(zoom) });
     }
 }
 
