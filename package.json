@@ -14,5 +14,8 @@
         "obsidian": "^1.5.7",
         "tslib": "^2.6.2",
         "typescript": "^5.4.5"
+    },
+    "dependencies": {
+        "mermaid": "^11.17.0"
     }
 }

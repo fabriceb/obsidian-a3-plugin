@@ -1,3 +1,4 @@
+import mermaid from "mermaid";
 import {
     MarkdownRenderer,
     MarkdownView,
@@ -73,6 +74,10 @@ Identify the root causes of the issue using techniques such as the *5 Whys* or F
 - [Ensure the problem statement is clear and specific]
 
 \`\`\`mermaid
+
+
+%%{init: {'themeVariables': {'fontSize': '1em'}, 'flowchart': {'nodeSpacing': 20, 'rankSpacing': 20, 'padding': 0, 'diagramPadding': 0}}}%%
+
 graph RL;
     A[Effect / Problem] -->|Cause Category 1| B
     A -->|Cause Category 2| C
@@ -114,72 +119,6 @@ Monitor results, assess effectiveness, and determine next steps.
 - [Plan for necessary adaptations or next iterations]
 `;
 
-// Force a light mermaid theme per diagram. Obsidian initializes mermaid
-// with a theme matching the app (dark in dark mode) and newer mermaid bakes
-// those colors into inline styles, out of reach of CSS overrides. Injecting
-// "theme: neutral" into each block keeps the A3 page paper-like while any
-// theme/themeVariables the author wrote themselves still take precedence.
-function forceMermaidLightTheme(markdown: string, fontSizePt: number): string {
-    // Scale mermaid's own font size (and thus node box sizes, which it
-    // computes from measured label text) with the chosen page font size, so
-    // diagrams grow/shrink along with the surrounding text.
-    const fontSize =
-        Math.round(
-            ((BASE_MERMAID_FONT_SIZE_PX * fontSizePt) / BASE_FONT_SIZE_PT) *
-                100
-        ) / 100;
-    return markdown.replace(
-        /```mermaid[^\n]*\n([\s\S]*?)```/g,
-        (match, body: string) => {
-            if (/^\s*theme\s*:/m.test(body)) {
-                return match; // the author picked a theme, respect it
-            }
-            // Respect an author-set fontSize even without a custom theme
-            const skipFontSize = /^\s*fontSize\s*:/m.test(body);
-            const toInsert = ["theme: neutral"];
-            if (!skipFontSize) toInsert.push(`fontSize: ${fontSize}`);
-            const lines = body.split("\n");
-            if (lines[0].trim() === "---") {
-                // YAML frontmatter (must stay the first line): put the theme
-                // inside the config block
-                const end = lines.indexOf("---", 1);
-                if (end === -1) return match; // malformed, leave untouched
-                const configIdx = lines.findIndex(
-                    (l, i) => i > 0 && i < end && /^\s*config\s*:\s*$/.test(l)
-                );
-                if (configIdx !== -1) {
-                    const childIndent =
-                        lines[configIdx + 1]?.match(/^\s*/)?.[0] ?? "    ";
-                    lines.splice(
-                        configIdx + 1,
-                        0,
-                        ...toInsert.map((l) => childIndent + l)
-                    );
-                } else {
-                    lines.splice(
-                        1,
-                        0,
-                        "config:",
-                        ...toInsert.map((l) => "  " + l)
-                    );
-                }
-                return "```mermaid\n" + lines.join("\n") + "```";
-            }
-            // No frontmatter: an init directive merges with any directives
-            // the author wrote later (later ones win on conflicting keys)
-            const init: Record<string, unknown> = { theme: "neutral" };
-            if (!skipFontSize) init.fontSize = fontSize;
-            return (
-                "```mermaid\n%%{init: " +
-                JSON.stringify(init) +
-                "}%%\n" +
-                body +
-                "```"
-            );
-        }
-    );
-}
-
 // Swap the view type of a leaf while keeping it on the same file.
 async function setLeafViewType(leaf: WorkspaceLeaf, type: string): Promise<void> {
     await leaf.setViewState({
@@ -189,13 +128,24 @@ async function setLeafViewType(leaf: WorkspaceLeaf, type: string): Promise<void>
     });
 }
 
+// Obsidian's own mermaid pipeline bakes text measurements into the SVG at
+// render time and caches the result by source text, so a font-size change
+// never reaches it. Instead, mermaid blocks are hidden from Obsidian (by
+// renaming their code-fence language) and rendered by the plugin's own
+// bundled mermaid, re-initialized with the scaled font size on each render.
+const A3_MERMAID_LANG = "a3-mermaid";
+
+function hideMermaidFromObsidian(markdown: string): string {
+    return markdown.replace(/```mermaid[ \t]*$/gm, "```" + A3_MERMAID_LANG);
+}
+
 const MIN_FONT_SIZE_PT = 7;
 const MAX_FONT_SIZE_PT = 13;
 // The plugin's original, pre-adjustable page size, used as the anchor for
-// scaling mermaid's own font size (see forceMermaidLightTheme).
+// scaling mermaid's label font size so it re-lays-out diagrams (node boxes
+// included) to match, instead of just visually zooming the rendered SVG.
 const BASE_FONT_SIZE_PT = 10;
-// Mermaid's own default font size (px) at that base page size.
-const BASE_MERMAID_FONT_SIZE_PX = 16;
+const BASE_MERMAID_FONT_SIZE_PX = 10;
 
 class A3View extends TextFileView {
     data = "";
@@ -355,18 +305,61 @@ ${clone.outerHTML}
         page.style.fontSize = `${this.fontSizePt}pt`;
         await MarkdownRenderer.render(
             this.app,
-            forceMermaidLightTheme(this.data, this.fontSizePt),
+            hideMermaidFromObsidian(this.data),
             page,
             this.file?.path ?? "",
             this
         );
         if (seq !== this.renderSeq) return; // superseded by a newer render
+        await this.renderMermaidDiagrams(page, seq);
+        if (seq !== this.renderSeq) return;
         this.fitZoom();
-        // Some code-block post-processors (mermaid included) can complete
-        // shortly after render() resolves; fit once more when they have.
+        // Some code-block post-processors can complete shortly after
+        // render() resolves; fit once more when they have.
         window.setTimeout(() => {
             if (seq === this.renderSeq) this.fitZoom();
         }, 400);
+    }
+
+    // Render the a3-mermaid code blocks with the plugin's bundled mermaid,
+    // re-initialized each time so node boxes are laid out around text
+    // measured at the page's current font size.
+    private async renderMermaidDiagrams(
+        page: HTMLElement,
+        seq: number
+    ): Promise<void> {
+        const blocks = Array.from(
+            page.querySelectorAll<HTMLElement>(
+                `pre > code.language-${A3_MERMAID_LANG}`
+            )
+        );
+        if (blocks.length === 0) return;
+        const fontSizePx =
+            (BASE_MERMAID_FONT_SIZE_PX * this.fontSizePt) / BASE_FONT_SIZE_PT;
+        mermaid.initialize({
+            startOnLoad: false,
+            fontSize: fontSizePx,
+            themeVariables: { fontSize: `${fontSizePx}px` },
+        });
+        for (const [i, code] of blocks.entries()) {
+            const source = code.textContent ?? "";
+            const pre = code.parentElement as HTMLElement;
+            const container = createDiv({ cls: "mermaid" });
+            pre.replaceWith(container);
+            try {
+                const { svg, bindFunctions } = await mermaid.render(
+                    `a3-mermaid-${seq}-${i}`,
+                    source,
+                    container
+                );
+                if (seq !== this.renderSeq) return;
+                container.innerHTML = svg;
+                bindFunctions?.(container);
+            } catch (e) {
+                console.error("A3: mermaid render failed", e);
+                container.setText(String(e));
+            }
+        }
     }
 
     // Scale the A3 page so it fits entirely inside the pane.

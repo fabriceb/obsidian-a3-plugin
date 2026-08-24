@@ -1,7 +1,7 @@
-/* The pane behind the A3 page */
+/* The pane behind the A3 page: no spacing outside the page itself */
 .workspace-leaf-content[data-type="a3-view"] .view-content {
     overflow: auto;
-    padding: var(--size-4-2);
+    padding: 0;
     background-color: var(--background-secondary);
 }
 
@@ -15,8 +15,13 @@
 .a3-page {
     width: 42cm;
     height: 29.7cm;
+    /* The page's inner margin: inside the 42cm x 29.7cm (border-box), and
+       in em so it scales with the chosen font size. Nothing outside (the
+       horizontal auto is only on-screen centering; it resolves to 0 when
+       the page fills the width, as in print). */
+    box-sizing: border-box;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 1em;
     background-color: #ffffff;
     color: #333333;
     border: 0px solid #dddddd;
@@ -24,7 +29,7 @@
     column-gap: 2rem;
     column-fill: auto;
     overflow: hidden;
-    font-size: 10pt;
+    font-size: 9pt;
     line-height: 1.4;
     /* The page represents printed paper: force light values for the
        Obsidian variables its content inherits, even in dark mode */
@@ -119,7 +124,7 @@
     color: #2f5c8f;
 }
 
-/* Mermaid diagrams (Obsidian wraps them in .block-language-mermaid) */
+/* Mermaid diagrams (Obsidian wraps them in a div.mermaid) */
 .a3-page .block-language-mermaid,
 .a3-page .mermaid {
     text-align: center;
@@ -129,9 +134,6 @@
     margin: 0 0 0 0;
 }
 
-/* Note: the light mermaid colors themselves are handled in main.ts by
-   injecting "theme: neutral" into each diagram before rendering; recent
-   mermaid bakes theme colors into inline styles, out of reach of CSS. */
 .a3-page .block-language-mermaid svg,
 .a3-page .mermaid svg {
     max-width: 100%;
@@ -146,7 +148,7 @@
         width: 42cm;
         height: 29.7cm;
         margin: 0;
-        padding: 0cm;
+        /* padding is NOT zeroed: the 1em inner margin is part of the page */
         border: none;
         box-shadow: none;
     }
