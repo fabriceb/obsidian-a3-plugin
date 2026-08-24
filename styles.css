@@ -5,8 +5,9 @@
     background-color: var(--background-secondary);
 }
 
-/* Font-size +/- view actions at a bound: still clickable (no-op) but shown dimmed */
-.view-action.is-disabled {
+/* Font-size +/- view actions at a bound: still clickable (no-op) but shown
+   dimmed. Scoped to the A3 view so other views' actions are unaffected. */
+.workspace-leaf-content[data-type="a3-view"] .view-action.is-disabled {
     opacity: 0.35;
 }
 

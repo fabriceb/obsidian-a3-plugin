@@ -8,6 +8,7 @@ import {
     Plugin,
     TextFileView,
     TFile,
+    ViewStateResult,
     WorkspaceLeaf,
 } from "obsidian";
 
@@ -201,9 +202,38 @@ class A3View extends TextFileView {
         if (clamped === this.fontSizePt) return;
         this.fontSizePt = clamped;
         this.updateFontSizeActions();
+        // Persist the new size in the workspace layout (see getState)
+        this.app.workspace.requestSaveLayout();
         // A full re-render (not just restyling the page) so mermaid
         // recomputes its diagrams at the new, proportionally scaled size.
         void this.render();
+    }
+
+    // The chosen font size is part of the view state, so it survives
+    // reopening the note and app restarts (stored in the workspace layout).
+    getState(): Record<string, unknown> {
+        const state = super.getState() as Record<string, unknown>;
+        state.fontSizePt = this.fontSizePt;
+        return state;
+    }
+
+    async setState(state: unknown, result: ViewStateResult): Promise<void> {
+        const fontSizePt = (state as { fontSizePt?: unknown } | null)
+            ?.fontSizePt;
+        if (typeof fontSizePt === "number") {
+            const clamped = Math.min(
+                MAX_FONT_SIZE_PT,
+                Math.max(MIN_FONT_SIZE_PT, Math.round(fontSizePt))
+            );
+            if (clamped !== this.fontSizePt) {
+                this.fontSizePt = clamped;
+                this.updateFontSizeActions();
+                // Re-render only if a page is already showing; the initial
+                // render happens in setViewData once the file is loaded.
+                if (this.page) void this.render();
+            }
+        }
+        await super.setState(state, result);
     }
 
     private updateFontSizeActions(): void {

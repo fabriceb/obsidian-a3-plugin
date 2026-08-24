@@ -38,6 +38,10 @@ ln -s /path/to/obsidian-a3-plugin "/path/to/Vault/.obsidian/plugins/athree-probl
 
 Then enable "A3 Problem-Solving" in Settings > Community plugins (toggle off Restricted mode if needed). After a rebuild, reload Obsidian (Cmd+R) or use the Hot Reload plugin.
 
+## Credits
+
+Diagrams are rendered by [mermaid](https://github.com/mermaid-js/mermaid) (MIT license, Copyright (c) 2014-present Knut Sveidqvist), which is bundled with the plugin.
+
 ## License
 
 [MIT](LICENSE)
