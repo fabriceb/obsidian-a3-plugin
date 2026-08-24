@@ -220,6 +220,7 @@ class A3View extends TextFileView {
     async setState(state: unknown, result: ViewStateResult): Promise<void> {
         const fontSizePt = (state as { fontSizePt?: unknown } | null)
             ?.fontSizePt;
+        let changed = false;
         if (typeof fontSizePt === "number") {
             const clamped = Math.min(
                 MAX_FONT_SIZE_PT,
@@ -228,12 +229,18 @@ class A3View extends TextFileView {
             if (clamped !== this.fontSizePt) {
                 this.fontSizePt = clamped;
                 this.updateFontSizeActions();
-                // Re-render only if a page is already showing; the initial
-                // render happens in setViewData once the file is loaded.
-                if (this.page) void this.render();
+                changed = true;
             }
         }
+        // Apply the size before super.setState so the initial render (via
+        // setViewData once the file loads) already uses it. Re-render
+        // explicitly only if super.setState did not itself start a fresh
+        // render (same file, no reload) and a page is showing.
+        const seqBefore = this.renderSeq;
         await super.setState(state, result);
+        if (changed && this.page && this.renderSeq === seqBefore) {
+            void this.render();
+        }
     }
 
     private updateFontSizeActions(): void {
@@ -329,7 +336,15 @@ ${clone.outerHTML}
         this.fitZoom();
     }
 
-    private async render(): Promise<void> {
+    private async render(retried = false): Promise<void> {
+        // At app startup the view can be asked to render before the
+        // workspace is laid out; mermaid would then measure its labels in
+        // a zero-sized pane and lay diagrams out wrong. Defer until ready
+        // (the callback fires immediately if the layout already is).
+        if (!this.app.workspace.layoutReady) {
+            this.app.workspace.onLayoutReady(() => void this.render(retried));
+            return;
+        }
         const seq = ++this.renderSeq;
         this.contentEl.empty();
         const page = this.contentEl.createDiv({ cls: "a3-page" });
@@ -353,9 +368,25 @@ ${clone.outerHTML}
         // Some code-block post-processors can complete shortly after
         // render() resolves; fit once more when they have.
         window.setTimeout(() => {
-            if (seq === this.renderSeq) this.fitZoom();
+            if (seq !== this.renderSeq) return;
+            this.fitZoom();
+            // Self-heal: if a mermaid label overflows its box, the fonts
+            // or stylesheets changed under the initial measurement (e.g.
+            // during app startup); one full re-render fixes the layout.
+            if (!retried && this.mermaidLabelsOverflow()) {
+                void this.render(true);
+            }
         }, 400);
     }
+
+    private mermaidLabelsOverflow(): boolean {
+        const page = this.page;
+        if (!page) return false;
+        return Array.from(
+            page.querySelectorAll<HTMLElement>(".mermaid foreignObject div")
+        ).some((el) => el.scrollWidth > el.clientWidth + 1);
+    }
+
 
     // Render the a3-mermaid code blocks with the plugin's bundled mermaid,
     // re-initialized each time so node boxes are laid out around text
