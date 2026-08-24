@@ -4,6 +4,8 @@ Renders markdown notes as a Toyota-style A3 problem-solving report (the format f
 
 ![A3 view](screenshot.png)
 
+![A3 view in action](screencast.gif)
+
 A note gets three ways to look at it: Obsidian's Reading view, Source mode / Live Preview, and the plugin's **A3 view**.
 
 ## Usage
