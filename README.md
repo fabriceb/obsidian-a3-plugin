@@ -33,7 +33,7 @@ npm run build   # type-check + production bundle
 Install into a vault by symlinking this folder into the vault's plugin directory:
 
 ```
-ln -s /path/to/obsidian-a3-plugin "/path/to/Vault/.obsidian/plugins/a3-problem-solving"
+ln -s /path/to/obsidian-a3-plugin "/path/to/Vault/.obsidian/plugins/athree-problem-solving"
 ```
 
 Then enable "A3 Problem-Solving" in Settings > Community plugins (toggle off Restricted mode if needed). After a rebuild, reload Obsidian (Cmd+R) or use the Hot Reload plugin.
