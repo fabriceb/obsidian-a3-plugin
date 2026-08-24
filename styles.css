@@ -143,8 +143,9 @@
 /* Print rules for the standalone HTML export opened in the browser via the
    printer action (this stylesheet is inlined into that export) */
 @media print {
+    /* No zoom reset needed: the exported clone has its inline fit-zoom
+       removed at export time, so the page is already at true size. */
     .a3-page {
-        zoom: 1 !important;
         width: 42cm;
         height: 29.7cm;
         margin: 0;

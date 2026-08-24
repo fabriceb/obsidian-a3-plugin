@@ -227,7 +227,8 @@ class A3View extends TextFileView {
             new Notice("Printing is only available on desktop.");
             return;
         }
-        const req = (window as unknown as { require: NodeRequire }).require;
+        const req = (window as unknown as { require: (id: string) => unknown })
+            .require;
         let pluginCss = "";
         const dir = this.plugin.manifest.dir;
         if (dir) {
@@ -240,7 +241,8 @@ class A3View extends TextFileView {
             }
         }
         const clone = page.cloneNode(true) as HTMLElement;
-        clone.setCssProps({ zoom: "1" }); // print at true size, not the fit zoom
+        // Print at true size: drop the inline fit zoom copied from the pane
+        clone.style.removeProperty("zoom");
         const title = this.file?.basename ?? "A3";
         const html = `<!DOCTYPE html>
 <html>
@@ -266,13 +268,16 @@ ${clone.outerHTML}
 </body>
 </html>
 `;
-        const os = req("os");
-        const fspath = req("path");
-        const fs = req("fs");
+        const os = req("os") as typeof import("node:os");
+        const fspath = req("path") as typeof import("node:path");
+        const fs = req("fs") as typeof import("node:fs");
+        const electron = req("electron") as {
+            shell: { openPath: (path: string) => Promise<string> };
+        };
         const safeName = title.replace(/[^\wÀ-ɏ -]+/g, "_");
         const outPath = fspath.join(os.tmpdir(), `${safeName} (A3 print).html`);
         fs.writeFileSync(outPath, html, "utf8");
-        await req("electron").shell.openPath(outPath);
+        await electron.shell.openPath(outPath);
     }
 
     getViewData(): string {
@@ -302,10 +307,8 @@ ${clone.outerHTML}
         // Mermaid measures its HTML labels with getBoundingClientRect(),
         // which is scaled by an ancestor's CSS zoom: node boxes would come
         // out too small for their text. Render at zoom 1, fit afterwards.
-        page.setCssProps({
-            zoom: "1",
-            "font-size": `${this.fontSizePt}pt`,
-        });
+        // (The fresh page div has no inline zoom yet, so it renders at 1.)
+        page.setCssProps({ "font-size": `${this.fontSizePt}pt` });
         await MarkdownRenderer.render(
             this.app,
             hideMermaidFromObsidian(this.data),
