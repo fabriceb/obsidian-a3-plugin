@@ -297,6 +297,24 @@ body {
 }
 @media print {
     body { padding: 0; background-color: #ffffff; }
+
+    /* The exported clone has its inline fit-zoom removed at export time,
+       so the page is already at true size; no zoom reset needed. The 1em
+       inner padding is part of the page, so it is not zeroed. These rules
+       are only here (not in styles.css) because @page cannot be scoped
+       and would otherwise affect Obsidian's native Export to PDF. */
+    .a3-page {
+        width: 42cm;
+        height: 29.7cm;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    @page {
+        size: a3 landscape;
+        margin: 0;
+    }
 }
 </style>
 </head>

@@ -146,23 +146,6 @@
     background-color: transparent;
 }
 
-/* Print rules for the standalone HTML export opened in the browser via the
-   printer action (this stylesheet is inlined into that export) */
-@media print {
-    /* No zoom reset needed: the exported clone has its inline fit-zoom
-       removed at export time, so the page is already at true size. */
-    .a3-page {
-        width: 42cm;
-        height: 29.7cm;
-        margin: 0;
-
-        /* padding is NOT zeroed: the 1em inner margin is part of the page */
-        border: none;
-        box-shadow: none;
-    }
-
-    @page {
-        size: a3 landscape;
-        margin: 0;
-    }
-}
+/* Print rules live in main.ts (printA3), inlined only into the standalone
+   HTML export: this stylesheet is loaded into the app itself, where an
+   unscopable @page rule would hijack Obsidian's native Export to PDF. */

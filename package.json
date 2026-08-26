@@ -1,6 +1,6 @@
 {
     "name": "obsidian-a3-plugin",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "Obsidian plugin that renders markdown notes as Toyota-style A3 problem-solving reports",
     "main": "main.js",
     "scripts": {
