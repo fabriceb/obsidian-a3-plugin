@@ -5,6 +5,7 @@ logs/
 
 # Build outputs
 packages/obsidian/main.js
+packages/obsidian/manifest.json
 packages/obsidian/styles.css
 packages/vscode/dist/
 *.vsix

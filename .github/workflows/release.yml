@@ -36,7 +36,7 @@ jobs:
 
       - name: Check the tag matches manifest.json
         run: |
-          version="$(node -p "require('./manifest.json').version")"
+          version="$(node -p "require('../../manifest.json').version")"
           if [ "$version" != "${GITHUB_REF_NAME}" ]; then
             echo "Tag ${GITHUB_REF_NAME} does not match manifest version ${version}" >&2
             exit 1
@@ -47,7 +47,7 @@ jobs:
         with:
           subject-path: |
             packages/obsidian/main.js
-            packages/obsidian/manifest.json
+            manifest.json
             packages/obsidian/styles.css
 
       - name: Create draft release
@@ -57,7 +57,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --title "Obsidian plugin $GITHUB_REF_NAME" \
             --draft \
-            main.js manifest.json styles.css
+            main.js ../../manifest.json styles.css
 
   vscode:
     if: ${{ startsWith(github.ref_name, 'vscode-v') }}

@@ -31,7 +31,7 @@ The Obsidian plugin's end-to-end scenarios live in `packages/obsidian/tests/e2e`
 
 Releases are cut by pushing a tag; `.github/workflows/release.yml` builds and attaches the artifacts as a draft GitHub release.
 
-- **Obsidian plugin**: bump `version` in `packages/obsidian/manifest.json` and add it to `versions.json`, then tag with the bare version (`0.2.0`). Obsidian requires the tag to equal the manifest version. The release carries `main.js`, `manifest.json` and `styles.css`.
+- **Obsidian plugin**: bump `version` in `manifest.json` and add it to `versions.json` (both at the repository root, where Obsidian's release scanner reads them from the default branch), then tag with the bare version (`0.2.0`). Obsidian requires the tag to equal the manifest version. The release carries `main.js`, `manifest.json` and `styles.css`.
 - **VS Code extension**: bump `version` in `packages/vscode/package.json`, then tag `vscode-v<version>` (`vscode-v0.1.0`). The release carries the `.vsix`; when a `VSCE_PAT` repository secret is set, the workflow also publishes it to the Visual Studio Marketplace.
 
 ## License
