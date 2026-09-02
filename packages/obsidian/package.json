@@ -1,0 +1,26 @@
+{
+    "name": "obsidian-a3-plugin",
+    "version": "0.2.0",
+    "private": true,
+    "description": "Obsidian plugin that renders markdown notes as Toyota-style A3 problem-solving reports",
+    "main": "main.js",
+    "scripts": {
+        "dev": "node esbuild.config.mjs",
+        "build": "npm run typecheck && node esbuild.config.mjs production",
+        "typecheck": "tsc -noEmit",
+        "lint": "eslint src/main.ts && stylelint src/styles.css ../core/src/styles.css",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "e2e:launch": "tests/e2e/launch-obsidian.sh"
+    },
+    "dependencies": {
+        "@a3/core": "*"
+    },
+    "devDependencies": {
+        "eslint": "^9.39.5",
+        "eslint-plugin-obsidianmd": "^0.4.2",
+        "obsidian": "^1.5.7",
+        "stylelint": "^17.14.1",
+        "stylelint-config-obsidianmd": "^0.1.0"
+    }
+}

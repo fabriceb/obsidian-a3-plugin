@@ -1,0 +1,16 @@
+/* The shared A3 page styles (packages/core/src/styles.css), bundled in by
+   esbuild into the plugin's styles.css. */
+@import url("@a3/core/styles.css");
+
+/* The pane behind the A3 page: no spacing outside the page itself */
+.workspace-leaf-content[data-type="a3-view"] .view-content {
+    overflow: auto;
+    padding: 0;
+    background-color: var(--background-secondary);
+}
+
+/* Font-size +/- view actions at a bound: still clickable (no-op) but shown
+   dimmed. Scoped to the A3 view so other views' actions are unaffected. */
+.workspace-leaf-content[data-type="a3-view"] .view-action.is-disabled {
+    opacity: 0.35;
+}

@@ -1,0 +1,17 @@
+/* The pane behind the A3 page: no spacing outside the page itself, and the
+   page fills the whole webview so fitZoom can measure it. */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--vscode-sideBar-background, var(--vscode-editor-background));
+}
+
+#a3-root {
+    height: 100vh;
+    width: 100vw;
+    overflow: auto;
+    padding: 0;
+}

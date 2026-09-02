@@ -1,0 +1,27 @@
+{
+    "name": "@a3/core",
+    "version": "0.2.0",
+    "private": true,
+    "description": "Host-agnostic A3 report rendering: markdown to a two-column A3 landscape page with mermaid diagrams, fit-to-pane zoom and print export.",
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts",
+        "./font-size": "./src/font-size.ts",
+        "./print": "./src/print.ts",
+        "./template": "./src/template.ts",
+        "./styles.css": "./src/styles.css"
+    },
+    "scripts": {
+        "typecheck": "tsc -noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "dompurify": "^3.3.3",
+        "markdown-it": "^14.1.0",
+        "mermaid": "^11.17.0"
+    },
+    "devDependencies": {
+        "@types/markdown-it": "^14.1.2"
+    }
+}

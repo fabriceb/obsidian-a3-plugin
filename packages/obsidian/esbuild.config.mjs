@@ -10,9 +10,14 @@ If you want to view the source, please visit the plugin's repository.
 
 const prod = process.argv[2] === "production";
 
+// Two entry points: the plugin code (main.js) and its stylesheet
+// (styles.css, which @imports the shared A3 page styles from @a3/core).
 const context = await esbuild.context({
     banner: { js: banner },
-    entryPoints: ["main.ts"],
+    entryPoints: [
+        { in: "src/main.ts", out: "main" },
+        { in: "src/styles.css", out: "styles" },
+    ],
     bundle: true,
     external: [
         "obsidian",
@@ -37,7 +42,7 @@ const context = await esbuild.context({
     sourcemap: prod ? false : "inline",
     minify: prod,
     treeShaking: true,
-    outfile: "main.js",
+    outdir: ".",
 });
 
 if (prod) {

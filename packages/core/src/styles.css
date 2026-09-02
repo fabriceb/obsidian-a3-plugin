@@ -1,18 +1,8 @@
-/* The pane behind the A3 page: no spacing outside the page itself */
-.workspace-leaf-content[data-type="a3-view"] .view-content {
-    overflow: auto;
-    padding: 0;
-    background-color: var(--background-secondary);
-}
-
-/* Font-size +/- view actions at a bound: still clickable (no-op) but shown
-   dimmed. Scoped to the A3 view so other views' actions are unaffected. */
-.workspace-leaf-content[data-type="a3-view"] .view-action.is-disabled {
-    opacity: 0.35;
-}
-
-/* The A3 page itself: real A3 landscape paper, kept white in dark mode too
-   since it represents a printed document */
+/* The A3 page: real A3 landscape paper, kept white in dark mode too since
+   it represents a printed document. Host-agnostic: nothing in here refers
+   to the surrounding app, and there is no @page rule (it cannot be scoped
+   and would hijack the host's own printing); print rules live in the
+   standalone export (print.ts). */
 .a3-page {
     width: 42cm;
     height: 29.7cm;
@@ -31,30 +21,16 @@
     column-gap: 2rem;
     column-fill: auto;
     overflow: hidden;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", sans-serif;
 
     /* Set per view via the --a3-font-size custom property (+/- actions) */
     font-size: var(--a3-font-size, 9pt);
     line-height: 1.4;
 
-    /* The page represents printed paper: force light values for the
-       Obsidian variables its content inherits, even in dark mode */
+    /* The page represents printed paper: light, even in a dark host */
     color-scheme: light;
-
-    --background-primary: #fff;
-    --background-secondary: #f5f5f5;
-    --background-modifier-border: #ddd;
-    --text-normal: #333;
-    --text-muted: #555;
-    --text-faint: #777;
-    --code-background: #f5f5f5;
-    --code-normal: #333;
-    --hr-color: rgb(204 204 204);
-    --table-border-color: #ddd;
-    --table-header-background: #f5f5f5;
-    --link-color: #2f5c8f;
-    --link-external-color: #2f5c8f;
-    --blockquote-border-color: #ccc;
-    --checkbox-color: #2f5c8f;
 }
 
 /* Normal text at 10pt, per the A3 spec (1em = the 10pt base set on .a3-page) */
@@ -74,6 +50,16 @@
 .a3-page ol {
     margin: 0 0 1rem 1.5rem;
     padding: 0;
+}
+
+.a3-page li.task-list-item {
+    list-style: none;
+    margin-left: -1.2em;
+}
+
+.a3-page li.task-list-item .task-list-item-checkbox {
+    margin: 0 0.3em 0 0;
+    accent-color: #2f5c8f;
 }
 
 /* Headers at 12pt (1.2em of the 10pt base on .a3-page); h1/h2 carry the A3 blue banner */
@@ -130,8 +116,40 @@
     color: #2f5c8f;
 }
 
-/* Mermaid diagrams (Obsidian wraps them in a div.mermaid) */
-.a3-page .block-language-mermaid,
+.a3-page blockquote {
+    margin: 0 0 1rem 0;
+    padding: 0 0 0 0.75rem;
+    border-left: 3px solid #ccc;
+    color: #555;
+}
+
+.a3-page code {
+    font-family: SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background-color: #f5f5f5;
+    color: #333;
+    border-radius: 2px;
+    padding: 0 0.2em;
+}
+
+.a3-page pre {
+    margin: 0 0 1rem 0;
+    padding: 0.5em;
+    background-color: #f5f5f5;
+    overflow-x: auto;
+    break-inside: avoid;
+}
+
+.a3-page pre code {
+    padding: 0;
+    background-color: transparent;
+}
+
+.a3-page img {
+    max-width: 100%;
+}
+
+/* Mermaid diagrams (rendered into a div.mermaid) */
 .a3-page .mermaid {
     text-align: center;
     break-inside: avoid;
@@ -140,12 +158,7 @@
     margin: 0 0 0 0;
 }
 
-.a3-page .block-language-mermaid svg,
 .a3-page .mermaid svg {
     max-width: 100%;
     background-color: transparent;
 }
-
-/* Print rules live in main.ts (printA3), inlined only into the standalone
-   HTML export: this stylesheet is loaded into the app itself, where an
-   unscopable @page rule would hijack Obsidian's native Export to PDF. */

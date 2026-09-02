@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "target": "ES2018",
+        "lib": ["DOM", "DOM.Iterable", "ES2018"],
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "isolatedModules": true,
+        "importHelpers": true,
+        "skipLibCheck": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "noEmit": true
+    }
+}

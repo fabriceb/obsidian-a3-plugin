@@ -1,4 +1,16 @@
 node_modules/
-main.js
 *.map
 .DS_Store
+logs/
+
+# Build outputs
+packages/obsidian/main.js
+packages/obsidian/styles.css
+packages/vscode/dist/
+*.vsix
+
+# e2e vault runtime state (Obsidian writes these when the vault opens)
+packages/obsidian/tests/e2e/vault/.obsidian/*
+!packages/obsidian/tests/e2e/vault/.obsidian/community-plugins.json
+!packages/obsidian/tests/e2e/vault/.obsidian/app.json
+!packages/obsidian/tests/e2e/vault/.obsidian/plugins

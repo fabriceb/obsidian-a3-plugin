@@ -1,0 +1,152 @@
+{
+    "name": "a3-problem-solving",
+    "displayName": "A3 Problem-Solving",
+    "description": "Render markdown files as a Toyota-style A3 problem-solving report: a 42cm x 29.7cm two-column page that fits on screen, with mermaid diagrams.",
+    "version": "0.1.0",
+    "publisher": "fabriceb",
+    "author": "Fabrice Bernhard",
+    "license": "MIT",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fabriceb/vscode-obsidian-a3-plugin"
+    },
+    "icon": "media/icon.png",
+    "engines": {
+        "vscode": "^1.90.0"
+    },
+    "categories": [
+        "Visualization",
+        "Other"
+    ],
+    "keywords": [
+        "a3",
+        "lean",
+        "problem solving",
+        "markdown",
+        "mermaid"
+    ],
+    "main": "./dist/extension.js",
+    "activationEvents": [
+        "onWebviewPanel:a3.preview"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "a3.openPreview",
+                "title": "Open as A3",
+                "category": "A3",
+                "icon": "$(open-preview)"
+            },
+            {
+                "command": "a3.createNew",
+                "title": "Create new A3",
+                "category": "A3"
+            },
+            {
+                "command": "a3.print",
+                "title": "Open in browser to print",
+                "category": "A3",
+                "icon": "$(export)"
+            },
+            {
+                "command": "a3.openMarkdown",
+                "title": "Open as markdown",
+                "category": "A3",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "a3.increaseFontSize",
+                "title": "Increase font size",
+                "category": "A3",
+                "icon": "$(add)"
+            },
+            {
+                "command": "a3.decreaseFontSize",
+                "title": "Decrease font size",
+                "category": "A3",
+                "icon": "$(remove)"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "a3.openPreview",
+                    "when": "editorLangId == markdown",
+                    "group": "navigation"
+                },
+                {
+                    "command": "a3.print",
+                    "when": "activeWebviewPanelId == a3.preview",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "a3.openMarkdown",
+                    "when": "activeWebviewPanelId == a3.preview",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "a3.increaseFontSize",
+                    "when": "activeWebviewPanelId == a3.preview",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "a3.decreaseFontSize",
+                    "when": "activeWebviewPanelId == a3.preview",
+                    "group": "navigation@4"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "a3.openPreview",
+                    "when": "editorLangId == markdown",
+                    "group": "navigation"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "a3.openPreview",
+                    "when": "resourceLangId == markdown",
+                    "group": "navigation"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "a3.openPreview",
+                    "when": "editorLangId == markdown"
+                },
+                {
+                    "command": "a3.print",
+                    "when": "activeWebviewPanelId == a3.preview"
+                },
+                {
+                    "command": "a3.openMarkdown",
+                    "when": "activeWebviewPanelId == a3.preview"
+                },
+                {
+                    "command": "a3.increaseFontSize",
+                    "when": "activeWebviewPanelId == a3.preview"
+                },
+                {
+                    "command": "a3.decreaseFontSize",
+                    "when": "activeWebviewPanelId == a3.preview"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "dev": "node esbuild.config.mjs",
+        "build": "npm run typecheck && node esbuild.config.mjs production",
+        "typecheck": "tsc -noEmit",
+        "package": "npm run build && vsce package --no-dependencies",
+        "publish": "vsce publish --no-dependencies"
+    },
+    "dependencies": {
+        "@a3/core": "*"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.90.0",
+        "@types/vscode-webview": "^1.57.5",
+        "@vscode/vsce": "^3.2.1"
+    }
+}

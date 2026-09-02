@@ -1,29 +1,26 @@
 {
-    "name": "obsidian-a3-plugin",
-    "version": "0.1.6",
-    "description": "Obsidian plugin that renders markdown notes as Toyota-style A3 problem-solving reports",
-    "main": "main.js",
+    "name": "a3-problem-solving-monorepo",
+    "private": true,
+    "description": "A3 problem-solving report rendering for markdown: shared core, Obsidian plugin and VS Code extension",
+    "workspaces": [
+        "packages/core",
+        "packages/obsidian",
+        "packages/vscode"
+    ],
     "scripts": {
-        "dev": "node esbuild.config.mjs",
-        "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-        "lint": "eslint main.ts && stylelint styles.css"
+        "build": "npm run build --workspaces --if-present",
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "test": "npm test --workspaces --if-present",
+        "dev:obsidian": "npm run dev --workspace packages/obsidian",
+        "dev:vscode": "npm run dev --workspace packages/vscode"
     },
     "devDependencies": {
         "@types/node": "^20.11.0",
         "esbuild": "^0.28.2",
-        "eslint": "^9.39.5",
-        "eslint-plugin-obsidianmd": "^0.4.2",
-        "obsidian": "^1.5.7",
-        "stylelint": "^17.14.1",
-        "stylelint-config-obsidianmd": "^0.1.0",
+        "jsdom": "^29.1.1",
         "tslib": "^2.6.2",
-        "typescript": "^5.4.5"
-    },
-    "dependencies": {
-        "mermaid": "^11.17.0"
-    },
-    "allowScripts": {
-        "eslint-plugin-obsidianmd@0.4.2": true,
-        "esbuild@0.28.2": true
+        "typescript": "^5.4.5",
+        "vitest": "^4.1.11"
     }
 }
