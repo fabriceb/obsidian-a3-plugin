@@ -1,6 +1,3 @@
-import * as fs from "node:fs/promises";
-import * as os from "node:os";
-import * as path from "node:path";
 import * as vscode from "vscode";
 import {
     DEFAULT_FONT_SIZE_PT,
@@ -19,6 +16,12 @@ const RENDER_DEBOUNCE_MS = 300;
 
 function fontSizeKey(uri: vscode.Uri): string {
     return `a3.fontSizePt:${uri.toString()}`;
+}
+
+// The document's title: its file name without the .md extension.
+function documentTitle(uri: vscode.Uri): string {
+    const name = uri.path.split("/").pop() ?? "A3";
+    return name.replace(/\.md$/i, "");
 }
 
 // One A3 panel per markdown document, re-rendered as the document changes.
@@ -60,7 +63,7 @@ class A3Panel {
     }
 
     private static title(uri: vscode.Uri): string {
-        return `A3: ${path.basename(uri.path, ".md")}`;
+        return `A3: ${documentTitle(uri)}`;
     }
 
     private static webviewOptions(
@@ -69,7 +72,7 @@ class A3Panel {
     ): vscode.WebviewOptions & vscode.WebviewPanelOptions {
         const roots = [vscode.Uri.joinPath(context.extensionUri, "dist")];
         if (uri.scheme === "file") {
-            roots.push(vscode.Uri.file(path.dirname(uri.fsPath)));
+            roots.push(vscode.Uri.joinPath(uri, ".."));
         }
         for (const folder of vscode.workspace.workspaceFolders ?? []) {
             roots.push(folder.uri);
@@ -83,7 +86,7 @@ class A3Panel {
 
     private fontSizePt: number;
     private ready = false;
-    private renderTimer: NodeJS.Timeout | undefined;
+    private renderTimer: ReturnType<typeof setTimeout> | undefined;
     private nextRequestId = 1;
     private readonly pendingPrint = new Map<
         number,
@@ -126,7 +129,7 @@ class A3Panel {
     private dispose(): void {
         A3Panel.panels.delete(this.uri.toString());
         if (A3Panel.active === this) A3Panel.active = undefined;
-        if (this.renderTimer) clearTimeout(this.renderTimer);
+        if (this.renderTimer) globalThis.clearTimeout(this.renderTimer);
         for (const d of this.disposables) d.dispose();
     }
 
@@ -150,23 +153,29 @@ class A3Panel {
     }
 
     private scheduleRender(): void {
-        if (this.renderTimer) clearTimeout(this.renderTimer);
-        this.renderTimer = setTimeout(() => void this.render(), RENDER_DEBOUNCE_MS);
+        if (this.renderTimer) globalThis.clearTimeout(this.renderTimer);
+        this.renderTimer = globalThis.setTimeout(
+            () => void this.render(),
+            RENDER_DEBOUNCE_MS
+        );
     }
 
     private async render(): Promise<void> {
         if (!this.ready) return;
         const document = await vscode.workspace.openTextDocument(this.uri);
-        const folder =
+        // The document's folder as a webview URI (with a trailing slash so
+        // relative image paths resolve inside it).
+        const folder = vscode.Uri.joinPath(this.uri, "..");
+        const baseUri =
             this.uri.scheme === "file"
-                ? vscode.Uri.file(path.dirname(this.uri.fsPath) + path.sep)
-                : undefined;
+                ? this.panel.webview.asWebviewUri(folder).toString() + "/"
+                : "";
         this.post({
             type: "render",
             uri: this.uri.toString(),
             markdown: document.getText(),
             fontSizePt: this.fontSizePt,
-            baseUri: folder ? this.panel.webview.asWebviewUri(folder).toString() : "",
+            baseUri,
         });
     }
 
@@ -186,12 +195,12 @@ class A3Panel {
     requestPrintMarkup(): Promise<string | null> {
         const requestId = this.nextRequestId++;
         return new Promise((resolve) => {
-            const timer = setTimeout(() => {
+            const timer = globalThis.setTimeout(() => {
                 this.pendingPrint.delete(requestId);
                 resolve(null);
             }, 5000);
             this.pendingPrint.set(requestId, (markup) => {
-                clearTimeout(timer);
+                globalThis.clearTimeout(timer);
                 resolve(markup);
             });
             this.post({ type: "requestPrintMarkup", requestId });
@@ -281,8 +290,9 @@ async function exists(uri: vscode.Uri): Promise<boolean> {
     }
 }
 
-// Export the rendered page as a standalone HTML file and open it in the
-// default browser, where the user can print it on A3 landscape.
+// Export the rendered page as a standalone HTML file (in the extension's
+// global storage folder) and open it in the default browser, where the
+// user can print it on A3 landscape.
 async function printA3(context: vscode.ExtensionContext): Promise<void> {
     const panel = A3Panel.active;
     if (!panel) return;
@@ -294,13 +304,18 @@ async function printA3(context: vscode.ExtensionContext): Promise<void> {
         return;
     }
     try {
-        const cssPath = vscode.Uri.joinPath(context.extensionUri, "dist", "a3.css");
-        const css = await fs.readFile(cssPath.fsPath, "utf8");
-        const title = path.basename(panel.uri.path, ".md");
+        const fs = vscode.workspace.fs;
+        const cssUri = vscode.Uri.joinPath(context.extensionUri, "dist", "a3.css");
+        const css = new TextDecoder().decode(await fs.readFile(cssUri));
+        const title = documentTitle(panel.uri);
         const html = buildPrintHtml({ title, pageMarkup, css });
-        const outPath = path.join(os.tmpdir(), printExportFileName(title));
-        await fs.writeFile(outPath, html, "utf8");
-        const opened = await vscode.env.openExternal(vscode.Uri.file(outPath));
+        await fs.createDirectory(context.globalStorageUri);
+        const outUri = vscode.Uri.joinPath(
+            context.globalStorageUri,
+            printExportFileName(title)
+        );
+        await fs.writeFile(outUri, new TextEncoder().encode(html));
+        const opened = await vscode.env.openExternal(outUri);
         if (!opened) throw new Error("openExternal returned false");
     } catch (e) {
         console.error("A3: could not open the print export", e);
